@@ -48,7 +48,8 @@ var DEFAULT_IMAGE_EXTENSIONS = [
     "_pen_markings.png",
     "_small_fill.png",
     "_small_remove.png",
-    "_spur.png"
+    "_spur.png",
+    "_simCheck.png"
 ];
 // list of image types that have a corresponding _xxx_small.png version
 var SMALL_IMAGE_EXTENSIONS = [
