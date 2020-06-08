@@ -13,11 +13,15 @@ import matplotlib.pyplot as plt
 def getIntensityThresholdOtsu(s, params):
     logging.info(f"{s['filename']} - \tLightDarkModule.getIntensityThresholdOtsu")
     name = "otsu"
+
     local = strtobool(params.get("local", "False"))
+    
     radius = float(params.get("radius", 15))
     selem = disk(radius)
 
+    
     img = s.getImgThumb(s["image_work_size"])
+    
     img = color.rgb2gray(img)
 
     if local:
