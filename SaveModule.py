@@ -4,6 +4,7 @@ from skimage import io, img_as_ubyte
 from distutils.util import strtobool
 from skimage import color
 import numpy as np
+import json
 
 import matplotlib.pyplot as plt
 
@@ -45,3 +46,15 @@ def saveThumbnails(s, params):
     img = s.getImgThumb(params.get("small_dim", 500))
     io.imsave(s["outdir"] + os.sep + s["filename"] + "_thumb_small.png", img)
     return
+
+def saveJson(s, params):
+    print(json.dumps(s["scan_meta_dict"], indent=4))
+    print(json.dumps(s["slide_meta_dict"], indent=4))
+    print(json.dumps(s["wsi_meta_dict"], indent=4))
+
+    with open('scan_meta.json', 'w') as f:
+        json.dump(s["scan_meta_dict"], f)
+    with open('slide_meta.json', 'w') as f:
+        json.dump(s["slide_meta_dict"], f)
+    with open('wsi_meta.json', 'w') as f:
+        json.dump(s["wsi_meta_dict"], f)
