@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_samples, silhouette_score, davies_bouldin_score
 from scipy import ndimage as ndi
 from scipy.spatial import ConvexHull
+import compHelper
 
 import matplotlib.pyplot as plt  # these 2 are used for debugging
 from SaveModule import blend2Images #for easier debugging
@@ -107,7 +108,8 @@ def fillSmallHoles(s, params):
 
 
 def compareObjects(s, params):
-    # print("Comparing objects...")
+
+    # threshold for similar objects. Check histogram on hu-distances on more objects to find more acurate thresholds
     hu_thresh = 0.015
     logging.info(f"{s['filename']} - \tcompareObjects")
     area_mask = s["img_mask_use"]
@@ -136,6 +138,8 @@ def compareObjects(s, params):
                 s.addToPrintList("mask_use Hu diff {0} vs {1}".format(o_ref, o_comp), str(hu_diff_area))
                 s.addToPrintList("mask_use log Hu diff {0} vs {1}".format(o_ref, o_comp), str(-np.log10(hu_diff_area)))
 
+                # surf_matching = compHelper.calc_sim_surf(obj_ref, obj_comp, img, s)
+                surf_matching = 0
         
 
                 if hu_diff_hull < hu_thresh:
@@ -153,7 +157,7 @@ def compareObjects(s, params):
     plt.axis("off")
     # plt.show()
 
-    plt.savefig(s["outdir"] + os.sep + s["filename"] + "_simCheck.png")
+    plt.savefig(s["outdir"] + os.sep + s["filename"] + "_simCheck_hu.png")
 
 
 
