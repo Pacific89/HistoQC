@@ -23,6 +23,8 @@ def identifyBlurryRegions(s, params):
     blur_threshold = float(params.get("blur_threshold", .1))
 
     img = s.getImgThumb(params.get("image_work_size", "2.5x"))
+    print("Img dim:", img.shape)
+
     img = rgb2gray(img)
     img_laplace = np.abs(skimage.filters.laplace(img))
     mask = skimage.filters.gaussian(img_laplace, sigma=blur_radius) <= blur_threshold
@@ -39,6 +41,7 @@ def identifyBlurryRegions(s, params):
 
     s.addToPrintList("percent_blurry",
                      printMaskHelper(params.get("mask_statistics", s["mask_statistics"]), prev_mask, s["img_mask_use"]))
+    s["scan_meta_dict"]["scan.quality.oof-error-rate"] = printMaskHelper(params.get("mask_statistics", s["mask_statistics"]), prev_mask, s["img_mask_use"])
 
     if len(s["img_mask_use"].nonzero()[0]) == 0:  # add warning in case the final tissue is empty
         logging.warning(
