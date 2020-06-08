@@ -3,6 +3,8 @@ import os
 import numpy as np
 import inspect
 from distutils.util import strtobool
+from matplotlib import pyplot as plt
+from pathlib import Path
 
 #os.environ['PATH'] = 'C:\\research\\openslide\\bin' + ';' + os.environ['PATH'] #can either specify openslide bin path in PATH, or add it dynamically
 import openslide
@@ -49,6 +51,9 @@ class BaseImage(dict):
 
         self["warnings"] = ['']  # this needs to be first key in case anything else wants to add to it
         self["output"] = []
+        self["scan_meta_dict"] = {}
+        self["slide_meta_dict"] = {}
+        self["wsi_meta_dict"] = {}
 
         # these 2 need to be first for UI to work
         self.addToPrintList("filename", os.path.basename(fname))
@@ -135,9 +140,67 @@ class BaseImage(dict):
 
                 output = np.concatenate(output, axis=1)
                 output = output[0:round(dim_base[1] * 1 / down_factor), 0:round(dim_base[0] * 1 / down_factor), :]
-                self[key] = output
+                # self[key] = output
+                # if dims are too large, memory errors will arise
+                self[key] = self.helper(output)
+                self.add_meta_infos()
             else:
                 logging.error(
                     f"{self['filename']}: Unknown image level setting: {dim}!")
                 return -1
+
+
+
+
         return self[key]
+
+    def add_meta_infos(self):
+        # load values to dictionary
+        
+        self["scan_meta_dict"]["scan.identifier"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_ID"]
+        self["scan_meta_dict"]["scan.date"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_CREATIONDATETIME"]
+        # self["meta_info_dict"]["slide_name"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_NAME"]
+
+        # get total file size
+        directory = Path(self['filename'].split('.')[0])
+        folder_size = sum(f.stat().st_size for f in directory.glob('**/*') if f.is_file())
+        single_file_size = Path(self['filename']).stat().st_size
+        total_size = folder_size + single_file_size
+        self["wsi_meta_dict"]["wsi.size"] = total_size
+
+        self["scan_meta_dict"]["scan.resolution"] = str(self["os_handle"].dimensions[0]) + "," + str(self["os_handle"].dimensions[1])
+        self["scan_meta_dict"]["scan.resolution-x"] = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.MICROMETER_PER_PIXEL_X"]
+        self["scan_meta_dict"]["scan.resolution-y"] = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.MICROMETER_PER_PIXEL_Y"]
+
+        self["scan_meta_dict"]["scan.scanner.hw-version"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_HARDWARE_VERSION"]
+        self["scan_meta_dict"]["scan.scanner.type"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_HARDWARE_VERSION"]
+
+        self["scan_meta_dict"]["scan.scanner.manufacturer"] = "3D HISTECH"
+        self["scan_meta_dict"]["scan.scanner.serial-number"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_HARDWARE_ID"]
+        self["scan_meta_dict"]["scan.scanner.sw_version"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_SOFTWARE_VERSION"]
+
+
+    def helper(self, output):
+        # print(self["os_handle"].properties)
+        print("Helper...")
+        # plt.figure()
+        # plt.imshow(output)
+        first_layer = output[:,:,0]
+        row_sum = np.sum(first_layer, axis=0)
+        col_sum = np.sum(first_layer, axis=1)
+
+        x_min = np.argmax(row_sum>0)
+        y_min = np.argmax(col_sum>0)
+        x_max = len(row_sum) - np.argmax(row_sum[::-1]>0)
+        y_max = len(col_sum) - np.argmax(col_sum[::-1]>0)
+
+        # slice array
+        output = output[y_min:y_max,x_min:x_max]
+        # replace black with white (for later mask calculations)
+        output[output == 0] = 255
+        plt.figure()
+        plt.imshow(output)
+        plt.show()
+        return output
+
+        
