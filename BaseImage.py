@@ -157,17 +157,17 @@ class BaseImage(dict):
     def add_meta_infos(self):
         # load values to dictionary
         
-        self["scan_meta_dict"]["scan.identifier"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_ID"]
-        self["scan_meta_dict"]["scan.date"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_CREATIONDATETIME"]
-        # self["meta_info_dict"]["slide_name"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_NAME"]
 
-        # get total file size
+        # get total file size (from multiple .dat files)
         directory = Path(self['filename'].split('.')[0])
         folder_size = sum(f.stat().st_size for f in directory.glob('**/*') if f.is_file())
         single_file_size = Path(self['filename']).stat().st_size
         total_size = folder_size + single_file_size
-        self["wsi_meta_dict"]["wsi.size"] = total_size
 
+        compression_quality = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.IMAGE_FORMAT"]
+        compression_type = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.IMAGE_COMPRESSION_FACTOR"]
+
+        # SCAN META:
         self["scan_meta_dict"]["scan.resolution"] = str(self["os_handle"].dimensions[0]) + "," + str(self["os_handle"].dimensions[1])
         self["scan_meta_dict"]["scan.resolution-x"] = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.MICROMETER_PER_PIXEL_X"]
         self["scan_meta_dict"]["scan.resolution-y"] = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.MICROMETER_PER_PIXEL_Y"]
@@ -179,6 +179,27 @@ class BaseImage(dict):
         self["scan_meta_dict"]["scan.scanner.serial-number"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_HARDWARE_ID"]
         self["scan_meta_dict"]["scan.scanner.sw_version"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_SOFTWARE_VERSION"]
 
+        self["scan_meta_dict"]["scan.identifier"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_ID"]
+        self["scan_meta_dict"]["scan.date"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_CREATIONDATETIME"]
+        self["scan_meta_dict"]["scan.compression.type"] = compression_quality
+        self["scan_meta_dict"]["scan.compression.quality"] = compression_type
+        self["scan_meta_dict"]["scan.area.origin"] = "dicom_top_right"
+        self["scan_meta_dict"]["scan.area.bordertop"] = "origin-7mm"
+        self["scan_meta_dict"]["scan.area.borderbottom"] = "origin-label_h+76,2mm"
+        self["scan_meta_dict"]["scan.area.borderleft"] = "origin+25,4-1mm"
+        self["scan_meta_dict"]["scan.area.borderright"] = "origin+1mm"
+        self["scan_meta_dict"]["scan.area.maxheight"] = "76,2-label_h-7mm"
+        self["scan_meta_dict"]["scan.area.maxwidth"] = "25 -1-1mm"
+        # self["meta_info_dict"]["slide_name"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_NAME"]
+
+
+        # WSI META
+        print(self["os_handle"].properties)
+        self["wsi_meta_dict"]["wsi.compression.type"] = compression_quality
+        self["wsi_meta_dict"]["wsi.compression.quality"] = compression_type
+        self["wsi_meta_dict"]["wsi.size"] = total_size
+
+        # SLIDE META (EMPTY FOR NOW?)
 
     def helper(self, output):
         # print(self["os_handle"].properties)
@@ -198,9 +219,6 @@ class BaseImage(dict):
         output = output[y_min:y_max,x_min:x_max]
         # replace black with white (for later mask calculations)
         output[output == 0] = 255
-        plt.figure()
-        plt.imshow(output)
-        plt.show()
         return output
 
         

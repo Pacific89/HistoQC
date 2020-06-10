@@ -48,13 +48,16 @@ def saveThumbnails(s, params):
     return
 
 def saveJson(s, params):
-    print(json.dumps(s["scan_meta_dict"], indent=4))
-    print(json.dumps(s["slide_meta_dict"], indent=4))
-    print(json.dumps(s["wsi_meta_dict"], indent=4))
+    # print(json.dumps(s["scan_meta_dict"], indent=4))
+    # print(json.dumps(s["slide_meta_dict"], indent=4))
+    # print(json.dumps(s["wsi_meta_dict"], indent=4))
 
-    with open('scan_meta.json', 'w') as f:
+    if s["scan_meta_dict"].get("scan.quality.oof-error-rate") == None:
+        s["scan_meta_dict"]["scan.quality.oof-error-rate"] = None
+
+    with open(s["outdir"] + os.sep + 'scan_meta.json', 'w') as f:
         json.dump(s["scan_meta_dict"], f)
-    with open('slide_meta.json', 'w') as f:
+    with open(s["outdir"] + os.sep + 'slide_meta.json', 'w') as f:
         json.dump(s["slide_meta_dict"], f)
-    with open('wsi_meta.json', 'w') as f:
+    with open(s["outdir"] + os.sep + 'wsi_meta.json', 'w') as f:
         json.dump(s["wsi_meta_dict"], f)

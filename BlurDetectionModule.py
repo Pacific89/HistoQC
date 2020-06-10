@@ -23,7 +23,6 @@ def identifyBlurryRegions(s, params):
     blur_threshold = float(params.get("blur_threshold", .1))
 
     img = s.getImgThumb(params.get("image_work_size", "2.5x"))
-    print("Img dim:", img.shape)
 
     img = rgb2gray(img)
     img_laplace = np.abs(skimage.filters.laplace(img))
