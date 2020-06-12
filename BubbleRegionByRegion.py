@@ -109,7 +109,7 @@ def detectSmoothness(s, params):
         prev_mask = s["img_mask_use"]
         s["img_mask_flat"] = mask_flat
 
-        io.imsave(s["outdir"] + os.sep + s["filename"] + "_flat.png", img_as_ubyte(mask_flat & prev_mask))
+        # io.imsave(s["outdir"] + os.sep + s["filename"] + "_flat.png", img_as_ubyte(mask_flat & prev_mask))
 
         s["img_mask_use"] = s["img_mask_use"] & ~s["img_mask_flat"]
 
