@@ -61,6 +61,9 @@ class BaseImage(dict):
 
         self["outdir"] = fname_outdir
         self["dir"] = os.path.dirname(fname)
+        print(fname_outdir)
+        print(self["dir"])
+
 
         self["os_handle"] = openslide.OpenSlide(fname)
         self["image_base_size"] = self["os_handle"].dimensions
@@ -159,13 +162,16 @@ class BaseImage(dict):
         
 
         # get total file size (from multiple .dat files)
-        directory = Path(self['filename'].split('.')[0])
+        
+        directory = Path(self['dir'].split('.')[0])
         folder_size = sum(f.stat().st_size for f in directory.glob('**/*') if f.is_file())
-        single_file_size = Path(self['filename']).stat().st_size
+        single_file_size = Path(self['dir']).stat().st_size
         total_size = folder_size + single_file_size
 
         compression_quality = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.IMAGE_FORMAT"]
         compression_type = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.IMAGE_COMPRESSION_FACTOR"]
+
+
 
         # SCAN META:
         self["scan_meta_dict"]["scan.resolution"] = str(self["os_handle"].dimensions[0]) + "," + str(self["os_handle"].dimensions[1])
@@ -179,7 +185,8 @@ class BaseImage(dict):
         self["scan_meta_dict"]["scan.scanner.serial-number"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_HARDWARE_ID"]
         self["scan_meta_dict"]["scan.scanner.sw_version"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_SOFTWARE_VERSION"]
 
-        self["scan_meta_dict"]["scan.identifier"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_ID"]
+        scan_id = self["os_handle"].properties["mirax.GENERAL.SLIDE_ID"]
+        self["scan_meta_dict"]["scan.identifier"] = scan_id
         self["scan_meta_dict"]["scan.date"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_CREATIONDATETIME"]
         self["scan_meta_dict"]["scan.compression.type"] = compression_quality
         self["scan_meta_dict"]["scan.compression.quality"] = compression_type
@@ -194,12 +201,13 @@ class BaseImage(dict):
 
 
         # WSI META
-        print(self["os_handle"].properties)
         self["wsi_meta_dict"]["wsi.compression.type"] = compression_quality
         self["wsi_meta_dict"]["wsi.compression.quality"] = compression_type
         self["wsi_meta_dict"]["wsi.size"] = total_size
 
         # SLIDE META (EMPTY FOR NOW?)
+
+
 
     def helper(self, output):
         # print(self["os_handle"].properties)
