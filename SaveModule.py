@@ -32,7 +32,7 @@ def saveFinalMask(s, params):
     if strtobool(params.get("use_mask", "True")):  # should we create and save the fusion mask?
         img = s.getImgThumb(s["image_work_size"])
         out = blend2Images(img, mask)
-        io.imsave(s["outdir"] + os.sep + s["filename"] + "_fuse.png", img_as_ubyte(out))
+        # io.imsave(s["outdir"] + os.sep + s["filename"] + "_fuse.png", img_as_ubyte(out))
 
     return
 
@@ -41,7 +41,7 @@ def saveThumbnails(s, params):
     logging.info(f"{s['filename']} - \tsaveThumbnail")
     # we create 2 thumbnails for usage in the front end, one relatively small one, and one larger one
     img = s.getImgThumb(params.get("image_work_size", "1.25x"))
-    io.imsave(s["outdir"] + os.sep + s["filename"] + "_thumb.png", img)
+    # io.imsave(s["outdir"] + os.sep + s["filename"] + "_thumb.png", img)
 
     img = s.getImgThumb(params.get("small_dim", 500))
     io.imsave(s["outdir"] + os.sep + s["filename"] + "_thumb_small.png", img)
@@ -61,3 +61,16 @@ def saveJson(s, params):
         json.dump(s["slide_meta_dict"], f)
     with open(s["outdir"] + os.sep + 'wsi_meta.json', 'w') as f:
         json.dump(s["wsi_meta_dict"], f)
+
+def renameFolder(s, params):
+    # use slide ID from "mirax.GENERAL.SLIDE_ID" from INI file for folder name
+    folder_qc_out = os.path.dirname(s["outdir"])
+    # folder name with date of output
+    folder_name = s["outdir"]
+
+    # folder_to_qc = s["dir"]
+    new_name = os.path.join(folder_qc_out, s["scan_meta_dict"]["scan.identifier"])
+
+    os.rename(folder_name, new_name)
+
+
