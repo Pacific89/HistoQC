@@ -143,7 +143,7 @@ class BaseImage(dict):
 
                 output = np.concatenate(output, axis=1)
                 output = output[0:round(dim_base[1] * 1 / down_factor), 0:round(dim_base[0] * 1 / down_factor), :]
-                # self[key] = output
+                self[key] = output
                 # if dims are too large, memory errors will arise
                 self[key] = self.helper(output)
                 self.add_meta_infos()
@@ -205,8 +205,10 @@ class BaseImage(dict):
         self["wsi_meta_dict"]["wsi.compression.quality"] = compression_type
         self["wsi_meta_dict"]["wsi.size"] = total_size
 
-        # SLIDE META (EMPTY FOR NOW?)
-
+        # SLIDE META
+        self["slide_meta_dict"]["slide.identifier.label"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_LEVEL_3_SECTION.BARCODE_VALUE"]
+        self["slide_meta_dict"]["slide.label.normalized"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_LEVEL_3_SECTION.BARCODE_VALUE"]
+        self["slide_meta_dict"]["slide.label.transcribed"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_LEVEL_3_SECTION.BARCODE_VALUE"]
 
 
     def helper(self, output):
