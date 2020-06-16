@@ -212,10 +212,6 @@ class BaseImage(dict):
 
 
     def helper(self, output):
-        # print(self["os_handle"].properties)
-        print("Helper...")
-        # plt.figure()
-        # plt.imshow(output)
         first_layer = output[:,:,0]
         row_sum = np.sum(first_layer, axis=0)
         col_sum = np.sum(first_layer, axis=1)
@@ -230,5 +226,3 @@ class BaseImage(dict):
         # replace black with white (for later mask calculations)
         output[output == 0] = 255
         return output
-
-        
