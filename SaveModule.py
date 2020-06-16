@@ -40,18 +40,34 @@ def saveFinalMask(s, params):
 def saveThumbnails(s, params):
     logging.info(f"{s['filename']} - \tsaveThumbnail")
     # we create 2 thumbnails for usage in the front end, one relatively small one, and one larger one
-    img = s.getImgThumb(params.get("image_work_size", "1.25x"))
+    # img = s.getImgThumb(params.get("image_work_size", "1.25x"))
     # io.imsave(s["outdir"] + os.sep + s["filename"] + "_thumb.png", img)
 
-    img = s.getImgThumb(params.get("small_dim", 500))
-    io.imsave(s["outdir"] + os.sep + s["filename"] + "_thumb_small.png", img)
+    # img = s.getImgThumb(params.get("small_dim", 500))
+    # io.imsave(s["outdir"] + os.sep + s["filename"] + "_thumb_small.png", img)
+
+    # save additional thumbnails
+
+    basename = s["outdir"] + os.sep + s["filename"]
+
+    label = s["os_handle"].associated_images["label"]
+    macro = s["os_handle"].associated_images["macro"]
+    thumbnail = s["os_handle"].associated_images["thumbnail"]
+
+    label_resize = label.copy()
+    label_resize.thumbnail((500, 500))
+    macro_resize = macro.copy()
+    macro_resize.thumbnail((500, 500))
+    thumbnail_resize = thumbnail.copy()
+    thumbnail_resize.thumbnail((500, 500))
+
+    io.imsave(basename + "_macro_small.png", np.asarray(macro_resize))
+    io.imsave(basename + "_thumbnail_small.png", np.asarray(thumbnail_resize))
+    io.imsave(basename + "_label_small.png", np.asarray(label_resize))
+
     return
 
 def saveJson(s, params):
-    # print(json.dumps(s["scan_meta_dict"], indent=4))
-    # print(json.dumps(s["slide_meta_dict"], indent=4))
-    # print(json.dumps(s["wsi_meta_dict"], indent=4))
-
     if s["scan_meta_dict"].get("scan.quality.oof-error-rate") == None:
         s["scan_meta_dict"]["scan.quality.oof-error-rate"] = None
 
@@ -61,6 +77,24 @@ def saveJson(s, params):
         json.dump(s["slide_meta_dict"], f)
     with open(s["outdir"] + os.sep + 'wsi_meta.json', 'w') as f:
         json.dump(s["wsi_meta_dict"], f)
+
+
+
+def save_thumbs(s, params):
+
+    label = s["os_handle"].associated_images["label"]
+    macro = s["os_handle"].associated_images["macro"]
+    thumbnail = s["os_handle"].associated_images["thumbnail"]
+
+    label.thumbnail((500, 500))
+    macro.thumbnail((500,500))
+    thumbnail.thumbnail((500,500))
+
+    io.imsave(s["outdir"] + os.sep + s["filename"] + "label_thumb_small.png", label)
+    io.imsave(s["outdir"] + os.sep + s["filename"] + "macro_thumb_small.png", macro)
+    io.imsave(s["outdir"] + os.sep + s["filename"] + "thumbnail_thumb_small.png", thumbnail)
+
+
 
 def renameFolder(s, params):
     # use slide ID from "mirax.GENERAL.SLIDE_ID" from INI file for folder name
