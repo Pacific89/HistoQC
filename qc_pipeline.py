@@ -55,6 +55,8 @@ def worker(filei, nfiles, fname, args, lconfig, processQueue, lock, shared_dict)
     makeDir(fname_outdir)
 
     logging.info(f"-----Working on:\t{fname}\t\t{filei+1} of {nfiles}")
+    full_path = os.path.abspath(fname)
+
     try:
         s = BaseImage.BaseImage(fname, fname_outdir, dict(lconfig.items("BaseImage.BaseImage")))
 
@@ -68,6 +70,11 @@ def worker(filei, nfiles, fname, args, lconfig, processQueue, lock, shared_dict)
         raise e
 
     s["os_handle"] = None  # need to get rid of handle because it can't be pickled
+
+    completed = len(s["completed"])
+    total = len(processQueue)
+    completed_p = total/completed
+    shared_dict[full_path] = completed_p
     return s
 
 
@@ -150,6 +157,7 @@ if __name__ == '__main__':
     manager = multiprocessing.Manager()
     lock = manager.Lock()
     shared_dict = manager.dict()
+
     headers.append(f"start_time:\t{datetime.datetime.now()}")
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('input_pattern',
@@ -252,6 +260,7 @@ if __name__ == '__main__':
     logging.info("------------Done---------\n")
     logging.info("These images failed (available also in error.log), warnings are listed in warnings column in output:")
 
+
     for fname, error in failed:
         logging.info(f"{fname}\t{error}")
 
@@ -267,7 +276,11 @@ if __name__ == '__main__':
             logging.error(f"Error creating symlink to output in UserInterface/Data, need to perform this manually for output to work! ln -s {origin} {target}")
             pass
 
+    logging.info("-----------Report--------")
+    logging.info("Files processed: {0} ".format(len(shared_dict.keys())))
+    logging.info("Processes finished: {0} %".format(100*len(shared_dict.keys())/sum(list(shared_dict.values()))))
 
+    
     logging.shutdown()
     shutil.copy("error.log",
                 args.outdir + os.sep + "error.log")  # copy error log to output directory. tried move but the filehandle is never released by logger no matter how hard i try
