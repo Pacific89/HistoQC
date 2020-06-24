@@ -106,6 +106,21 @@ def fillSmallHoles(s, params):
 
 
 
+def getObjectData(s, params):
+    area_mask = s["img_mask_use"]
+    area_label = measure.label(area_mask, background = 0)
+    area_props = measure.regionprops(area_label)
+
+    if use_clustering:
+        obj_mask = _get_group_mask(area_props, img, cluster_labels)
+        obj_label = measure.label(obj_mask, background = 0)
+        obj_props = measure.regionprops(obj_label)
+        s.addToPrintList("Objects", len(obj_props))
+    else:
+        s.addToPrintList("Objects". len(area_props))
+        s["scan_meta_dict"]["scan.quality.oof-error-rate"] = printMaskHelper(params.get("mask_statistics", s["mask_statistics"]), prev_mask, s["img_mask_use"])
+
+
 
 def compareObjects(s, params):
 
