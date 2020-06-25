@@ -279,6 +279,7 @@ if __name__ == '__main__':
     logging.info("-----------Report--------")
     logging.info("Files processed: {0} ".format(len(shared_dict.keys())))
     logging.info("Processes finished: {0} %".format(100*len(shared_dict.keys())/sum(list(shared_dict.values()))))
+    logging.info("Files failed: {0}".format(len(failed)))
 
     
     logging.shutdown()
