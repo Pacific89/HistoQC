@@ -170,13 +170,20 @@ class BaseImage(dict):
 
         compression_quality = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.IMAGE_FORMAT"]
         compression_type = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.IMAGE_COMPRESSION_FACTOR"]
-
+        dim_x = self["os_handle"].dimensions[0]
+        dim_y = self["os_handle"].dimensions[1]
+        res_x = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.MICROMETER_PER_PIXEL_X"]
+        res_y = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.MICROMETER_PER_PIXEL_Y"]
+        scan_area_x = float(dim_x) * float(res_x) / 10e3 # res in micro meters 10e-6, divide by 10e3 for mm
+        scan_area_y = float(dim_y) * float(res_y) / 10e3 # res in micro meters 10e-6, divide by 10e3 for mm
+        # print("scan area x: {0} mm".format(scan_area_x))
+        # print("scan area y: {0} mm".format(scan_area_y))
 
 
         # SCAN META:
-        self["scan_meta_dict"]["scan.resolution"] = str(self["os_handle"].dimensions[0]) + "," + str(self["os_handle"].dimensions[1])
-        self["scan_meta_dict"]["scan.resolution-x"] = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.MICROMETER_PER_PIXEL_X"]
-        self["scan_meta_dict"]["scan.resolution-y"] = self["os_handle"].properties["mirax.LAYER_0_LEVEL_0_SECTION.MICROMETER_PER_PIXEL_Y"]
+        self["scan_meta_dict"]["scan.resolution"] = str(dim_x) + "," + str(dim_y)
+        self["scan_meta_dict"]["scan.resolution-x"] = res_x
+        self["scan_meta_dict"]["scan.resolution-y"] = res_y
 
         self["scan_meta_dict"]["scan.scanner.hw-version"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_HARDWARE_VERSION"]
         self["scan_meta_dict"]["scan.scanner.type"] = self["os_handle"].properties["mirax.NONHIERLAYER_0_SECTION.SCANNER_HARDWARE_VERSION"]
@@ -190,6 +197,8 @@ class BaseImage(dict):
         self["scan_meta_dict"]["scan.date"] = self["os_handle"].properties["mirax.GENERAL.SLIDE_CREATIONDATETIME"]
         self["scan_meta_dict"]["scan.compression.type"] = compression_quality
         self["scan_meta_dict"]["scan.compression.quality"] = compression_type
+        self["scan_meta_dict"]["scan.area.x"] = scan_area_x
+        self["scan_meta_dict"]["scan.area.y"] = scan_area_y
         self["scan_meta_dict"]["scan.area.origin"] = "dicom_top_right"
         self["scan_meta_dict"]["scan.area.bordertop"] = "origin-7mm"
         self["scan_meta_dict"]["scan.area.borderbottom"] = "origin-label_h+76,2mm"
